@@ -7,6 +7,9 @@ use std::collections::HashMap;
 // https://crates.io/crates/rusqlite/
 // https://rust-lang-nursery.github.io/rust-cookbook/database/sqlite.html#create-a-sqlite-database
 
+// https://github.com/Progressbar/heimdall-db
+// https://qiita.com/kimagure/items/e24d7d6514a6a0dd2b48
+
 #[derive(Debug)]
 struct Cat {
     name: String,
