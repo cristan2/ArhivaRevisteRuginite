@@ -1,23 +1,21 @@
 use rusqlite::Result;
 use arhiva_reviste_ruginite::db::*;
 
-// DOC & EXEMPLE
-// https://github.com/rusqlite/rusqlite
-// https://crates.io/crates/rusqlite/
-// https://rust-lang-nursery.github.io/rust-cookbook/database/sqlite.html#create-a-sqlite-database
-
-// https://github.com/Progressbar/heimdall-db
-// https://qiita.com/kimagure/items/e24d7d6514a6a0dd2b48
-
 fn main() -> Result<()> {
 
     let conn = DBConnection::open("arhiva_reviste_v7.0.db");
 
-    let reviste = conn.query_reviste();
+    let reviste = conn.retrieve_toate_revistele();
+
+    let rev_id = 1;
+    let revista: Result<Revista> = conn.retrieve_revista(&rev_id);
 
     for revista in reviste {
         println!("{:?}", revista.unwrap());
     }
+
+    println!("{:?}", revista);
+
 
     Ok(())
 }

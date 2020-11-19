@@ -1,9 +1,9 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, Statement};
 use rusqlite::NO_PARAMS;
 
 #[derive(Debug)]
 pub struct Revista {
-    id: u32,
+    id: i32,
     nume: String,
     alias: String,
     status: String,
@@ -45,10 +45,35 @@ impl DBConnection {
         }
     }
 
-    pub fn query_reviste(&self) -> Vec<Result<Revista>> {
-        let mut stmt_revista = self.connection.prepare("SELECT * FROM reviste").unwrap();
-        stmt_revista.query_map(NO_PARAMS, |row| Ok(Revista::from_row(row)))
+    fn prepare_statement(&self, query_string: &str) -> rusqlite::Statement {
+        self.connection.prepare(query_string).unwrap()
+    }
+
+    // TODO move queries to API trait
+    pub fn retrieve_toate_revistele(&self) -> Vec<Result<Revista>> {
+        let mut stmt_reviste: Statement = self.prepare_statement(
+            "
+            SELECT * FROM reviste
+            ");
+
+        stmt_reviste
+            .query_map(NO_PARAMS, |row| Ok(Revista::from_row(row)))
             .unwrap()
             .collect()
+    }
+
+    pub fn retrieve_revista(&self, revista_id: &i32) -> Result<Revista> {
+        let mut stmt_revista: Statement = self.prepare_statement(
+            "SELECT revista_id, revista_nume, aparitii
+            FROM reviste
+            WHERE revista_id = ?1"
+        );
+
+        let revista = stmt_revista
+            .query_map(&[revista_id], |row| Ok(Revista::from_row(row)))?
+            .next()
+            .unwrap();
+
+        revista
     }
 }
