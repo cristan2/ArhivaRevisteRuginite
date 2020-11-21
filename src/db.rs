@@ -35,6 +35,41 @@ impl Revista {
             observatii: row.get("observatii").ok(),
         }
     }
+
+    pub fn to_printable_header() -> Vec<String> {
+        // TODO astea ar trebui sa stea in struct si folosite si la parsarea unui row
+        vec![
+            String::from("revista_id"),
+            String::from("revista_nume"),
+            String::from("revista_alias"),
+            String::from("status"),
+            String::from("tip"),
+            String::from("perioada"),
+            String::from("aparitii"),
+            String::from("descriere"),
+            String::from("link_oficial"),
+            String::from("observatii"),
+        ]
+    }
+
+    pub fn to_printable_vec(&self) -> Vec<String>{
+
+        // TODO cum fac o constanta cu asta?
+        fn empty_string() -> String { String::from("")};
+
+        vec![
+            self.id.to_string(),
+            self.nume.clone(),
+            self.alias.clone().unwrap_or(empty_string()),
+            self.status.clone().unwrap_or(empty_string()),
+            self.tip.clone().unwrap_or(empty_string()),
+            self.perioada.clone().unwrap_or(empty_string()),
+            self.aparitii.clone().unwrap_or(empty_string()),
+            self.descriere.clone().unwrap_or(empty_string()),
+            self.link.clone().unwrap_or(empty_string()),
+            self.observatii.clone().unwrap_or(empty_string()),
+        ]
+    }
 }
 
 #[derive(Debug)]
