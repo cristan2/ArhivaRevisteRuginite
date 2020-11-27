@@ -1,10 +1,14 @@
 use rusqlite::{Connection, Result, Statement};
 use rusqlite::NO_PARAMS;
 
-// TODO generic API
+// TODO
+// - generic API
+// - dependency proiect DB + generare din cod
 // - error handling
 // - parse row for Option<T>: null or empty string -> None
 // - parse row for T (NOT NULL): empty string -> ???
+
+fn empty_string() -> String { String::from("")}
 
 #[derive(Debug)]
 pub struct Revista {
@@ -36,27 +40,28 @@ impl Revista {
         }
     }
 
-    pub fn to_printable_header() -> Vec<String> {
+    pub fn get_nume_coloana() -> Vec<&'static str> {
         // TODO astea ar trebui sa stea in struct si folosite si la parsarea unui row
         vec![
-            String::from("revista_id"),
-            String::from("revista_nume"),
-            String::from("revista_alias"),
-            String::from("status"),
-            String::from("tip"),
-            String::from("perioada"),
-            String::from("aparitii"),
-            String::from("descriere"),
-            String::from("link_oficial"),
-            String::from("observatii"),
-        ]
+            "revista_id",
+            "revista_nume",
+            "revista_alias",
+            "status",
+            "tip",
+            "perioada",
+            "aparitii",
+            "descriere",
+            "link_oficial",
+            "observatii"]
     }
 
-    pub fn to_printable_vec(&self) -> Vec<String>{
+    pub fn to_printable_header() -> Vec<String> {
+        Revista::get_nume_coloana().into_iter().map(|s| String::from(s)).collect()
+    }
 
-        // TODO cum fac o constanta cu asta?
-        fn empty_string() -> String { String::from("")};
-
+    pub fn to_printable_vec(&self) -> Vec<String> {
+        
+        // TODO prea multa repetitie - macro?
         vec![
             self.id.to_string(),
             self.nume.clone(),
@@ -78,11 +83,11 @@ pub struct Editie {
     revista_id: i32,
     tip: Option<String>,
     parinte_editie_id: Option<String>,
-    numar: i32,
+    numar: Option<i32>, // in DB e NOT NULL, dar poate sa fie si string gol
     an: i32,
-    luna: i32,
+    luna: Option<i32>,  // in DB e NOT NULL, dar poate sa fie si string gol
     luna_sfarsit: Option<String>,
-    pret: Option<i32>,
+    pret: Option<i32>,  // in DB e NUMERIC
     nr_pagini: Option<i32>,
     disc_demo: Option<String>,
     joc_complet: Option<String>,
@@ -102,11 +107,11 @@ impl Editie {
             revista_id: row.get("revista_id").unwrap(),
             tip: row.get("tip").unwrap(),
             parinte_editie_id: row.get("parinte_editie_id").unwrap(),
-            numar: row.get("numar").unwrap_or(99),  // error ???
+            numar: row.get("numar").ok(),
             an: row.get("an").unwrap(),
-            luna: row.get("luna").unwrap_or(99),  // de inlocuit
+            luna: row.get("luna").ok(),
             luna_sfarsit: row.get("luna_sfarsit").ok(),
-            pret: row.get("pret").ok(),   // in DB e NUMERIC  // error
+            pret: row.get("pret").ok(),
             nr_pagini: row.get("nr_pagini").ok(),
             disc_demo: row.get("disc_demo").ok(),
             joc_complet: row.get("joc_complet").ok(),
@@ -118,6 +123,59 @@ impl Editie {
             scan_info_observatii: row.get("scan_info_observatii").ok(),
             scan_info_credits: row.get("scan_info_credits").ok(),
         }
+    }
+
+    pub fn get_nume_coloana() -> Vec<&'static str> {
+        vec![
+            "editie_id",
+            "revista_id",
+            "tip",
+            // "parinte_editie_id",
+            "numar",
+            "an",
+            "luna",
+            "luna_sfarsit",
+            "pret",
+            "nr_pagini",
+            "disc_demo",
+            "joc_complet",
+            "redactor_sef",
+            // "editie_link_oficial",
+            "editie_observatii",
+            // "scan_info_nr_pg",
+            // "scan_info_pg_lipsa",
+            // "scan_info_observatii",
+            "scan_info_credits",]
+    }
+
+    pub fn to_printable_header() -> Vec<String> {
+        Editie::get_nume_coloana().into_iter().map(|s| String::from(s)).collect()
+    }
+
+    pub fn to_printable_vec(&self) -> Vec<String> {
+        let i32_to_string = |n: i32| n.to_string();
+        vec![
+            self.editie_id.clone().to_string(),
+            self.revista_id.clone().to_string(),
+            self.tip.clone().unwrap_or(empty_string()),
+            // self.parinte_editie_id.clone().unwrap_or(empty_string()),
+            self.numar.clone().map_or(empty_string(), i32_to_string),
+            self.an.clone().to_string(),
+            self.luna.clone().map_or(empty_string(), i32_to_string),
+            self.luna_sfarsit.clone().unwrap_or(empty_string()),
+            self.pret.clone().map_or(empty_string(), i32_to_string),
+            self.nr_pagini.clone().map_or(empty_string(), i32_to_string),
+            self.disc_demo.clone().unwrap_or(empty_string()),
+            self.joc_complet.clone().unwrap_or(empty_string()),
+            self.redactor_sef.clone().unwrap_or(empty_string()),
+            // self.editie_link_oficial.clone().unwrap_or(empty_string()),
+            // TODO truncate e solutie temporara pentru text lung, de gasit alta solutie sau folosit comfy-table
+            self.editie_observatii.clone().map_or(empty_string(), |mut s| {s.truncate(52); s}),
+            // self.scan_info_nr_pg.clone().map_or(empty_string(), |nr| nr.to_string()),
+            // self.scan_info_pg_lipsa.clone().unwrap_or(empty_string()),
+            // self.scan_info_observatii.clone().unwrap_or(empty_string()),
+            self.scan_info_credits.clone().unwrap_or(empty_string()),
+        ]
     }
 }
 
