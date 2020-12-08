@@ -128,6 +128,37 @@ impl Editie {
     }
 }
 
+#[derive(Debug)]
+pub struct Downloads {
+    pub editie_id: i32,  // TODO trebuie asta?
+    pub categorie: String,
+    pub item: Option<i32>,
+    pub link: Option<String>,
+}
+
+impl Downloads {
+    pub fn from_row(row: &rusqlite::Row) -> Self {
+        Self {
+            editie_id: row.get("editie_id").unwrap(),
+            categorie: row.get("categorie").unwrap(),
+            item: row.get("revista_alias").ok(),
+            link: row.get("link").ok(),
+        }
+    }
+
+    pub fn get_nume_coloana() -> Vec<&'static str> {
+        // TODO astea ar trebui sa stea in struct si folosite cumva si la parsarea unui row
+        vec![
+            "editie_id",
+            "categorie",
+            "item",
+            "link"
+        ]
+    }
+}
+
+/* --- DB interface --- */
+
 pub struct DBConnection {
     db_name: String,
     connection: rusqlite::Connection
@@ -185,6 +216,19 @@ impl DBConnection {
 
         stmt_editii
             .query_map(NO_PARAMS, |row| Ok(Editie::from_row(row)))
+            .unwrap()
+            .collect()
+    }
+
+    pub fn retrieve_toate_downloads(&self) -> Vec<Result<Downloads>> {
+        let mut stmt_downloads = self.prepare_statement(
+            "
+            SELECT * FROM downloads
+            "
+        );
+
+        stmt_downloads
+            .query_map(NO_PARAMS, |row| Ok(Downloads::from_row(row)))
             .unwrap()
             .collect()
     }

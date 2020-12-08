@@ -1,4 +1,4 @@
-use crate::db::{Revista, Editie};
+use crate::db::{Revista, Editie, Downloads};
 use prettytable::{Table, Cell, Attr, Row, color};
 use rusqlite::Result;
 
@@ -62,6 +62,22 @@ impl PrintableRow for Editie {
             // self.scan_info_pg_lipsa.clone().unwrap_or(empty_string()),
             // self.scan_info_observatii.clone().unwrap_or(empty_string()),
             self.scan_info_credits.clone().unwrap_or(empty_string()),
+        ]
+    }
+}
+
+impl PrintableRow for Downloads {
+    fn get_printable_header() -> Vec<String> {
+        Self::get_nume_coloana().into_iter().map(|s| String::from(s)).collect()
+    }
+
+    fn get_printable_row(&self) -> Vec<String> {
+        let i32_to_string = |n: i32| n.to_string();
+        vec![
+            self.editie_id.to_string(),
+            self.categorie.clone(),
+            self.item.clone().map_or(empty_string(), i32_to_string),
+            self.link.clone().unwrap_or(empty_string()),
         ]
     }
 }
