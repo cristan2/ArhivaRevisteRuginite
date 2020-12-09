@@ -9,6 +9,7 @@ fn main() /*-> Result<()>*/ {
     afisare_toate_revistele(&db);
     afisare_toate_editiile(&db);
     afisare_toate_downloads(&db);
+    afisare_toate_articole(&db);
 
     // citire si afisare revista dupa id
     // let rev_id = 1;
@@ -16,7 +17,7 @@ fn main() /*-> Result<()>*/ {
     //
     // println!("{:?}", revista);
 
-    // let downloads = db.retrieve_toate_downloads();
+    // let downloads = db.retrieve_toate_articole();
     // for dld in downloads {
     //     println!("{:?}", dld.unwrap());
     // }
@@ -40,4 +41,10 @@ fn afisare_toate_downloads(db: &DBConnection) {
     let dlds = db.retrieve_toate_downloads();
     let tabel_dlds = make_table(&dlds);
     tabel_dlds.printstd();
+}
+
+fn afisare_toate_articole(db: &DBConnection) {
+    let articole = db.retrieve_toate_articole();
+    let tabel_articole = make_table(&articole);
+    tabel_articole.printstd();
 }

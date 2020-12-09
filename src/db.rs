@@ -129,14 +129,14 @@ impl Editie {
 }
 
 #[derive(Debug)]
-pub struct Downloads {
+pub struct Download {
     pub editie_id: i32,  // TODO trebuie asta?
     pub categorie: String,
     pub item: Option<i32>,
     pub link: Option<String>,
 }
 
-impl Downloads {
+impl Download {
     pub fn from_row(row: &rusqlite::Row) -> Self {
         Self {
             editie_id: row.get("editie_id").unwrap(),
@@ -153,6 +153,68 @@ impl Downloads {
             "categorie",
             "item",
             "link"
+        ]
+    }
+}
+
+#[derive(Debug)]
+pub struct Articol {
+    pub articol_id: i32,
+    pub revista_id: i32,
+    pub revista_nume: String,
+    pub editie_id: i32,
+    pub editie_an: i32,
+    pub editie_luna: Option<i32>,  // in DB e NOT NULL, dar poate sa fie si string gol
+    pub editie_luna_sfarsit: Option<String>,
+    pub editie_numar: i32,
+    pub pg_toc: Option<i32>,
+    pub pg_count: Option<i32>,
+    pub rubrica: Option<String>,
+    pub titlu: Option<String>,
+    pub joc_platforma: Option<String>,
+    pub autor: Option<String>,
+    pub nota: Option<String>,
+}
+
+impl Articol {
+    pub fn from_row(row: &rusqlite::Row) -> Self {
+        Self {
+            articol_id: row.get("articol_id").unwrap(),
+            revista_id: row.get("revista_id").unwrap(),
+            revista_nume: row.get("revista_nume").unwrap(),
+            editie_id: row.get("editie_id").unwrap(),
+            editie_an: row.get("editie_an").unwrap(),
+            editie_luna: row.get("editie_luna").ok(),
+            editie_luna_sfarsit: row.get("editie_luna_sfarsit").ok(),
+            editie_numar: row.get("editie_numar").unwrap(),
+            pg_toc: row.get("pg_toc").ok(),
+            pg_count: row.get("pg_count").ok(),
+            rubrica: row.get("rubrica").ok(),
+            titlu: row.get("titlu").ok(),
+            joc_platforma: row.get("joc_platforma").ok(),
+            autor: row.get("autor").ok(),
+            nota: row.get("nota").ok(),
+        }
+    }
+
+    pub fn get_nume_coloana() -> Vec<&'static str> {
+        // TODO astea ar trebui sa stea in struct si folosite cumva si la parsarea unui row
+        vec![
+            // "articol_id",
+            // "revista_id",
+            "revista_nume",
+            // "editie_id",
+            "editie_an",
+            "editie_luna",
+            // "editie_luna_sfarsit",
+            "editie_numar",
+            // "pg_toc",
+            // "pg_count",
+            "rubrica",
+            "titlu",
+            // "joc_platforma",
+            "autor",
+            "nota",
         ]
     }
 }
@@ -179,7 +241,6 @@ impl DBConnection {
     // TODO move queries to API trait
 
     /* --- Reviste --- */
-
     pub fn retrieve_toate_revistele(&self) -> Vec<Result<Revista>> {
         let mut stmt_reviste: Statement = self.prepare_statement(
             "
@@ -220,7 +281,8 @@ impl DBConnection {
             .collect()
     }
 
-    pub fn retrieve_toate_downloads(&self) -> Vec<Result<Downloads>> {
+    /* --- Downloads --- */
+    pub fn retrieve_toate_downloads(&self) -> Vec<Result<Download>> {
         let mut stmt_downloads = self.prepare_statement(
             "
             SELECT * FROM downloads
@@ -228,7 +290,21 @@ impl DBConnection {
         );
 
         stmt_downloads
-            .query_map(NO_PARAMS, |row| Ok(Downloads::from_row(row)))
+            .query_map(NO_PARAMS, |row| Ok(Download::from_row(row)))
+            .unwrap()
+            .collect()
+    }
+
+    /* --- Articole --- */
+    pub fn retrieve_toate_articole(&self) -> Vec<Result<Articol>> {
+        let mut stmt_articole = self.prepare_statement(
+            "
+            SELECT * FROM articole
+            "
+        );
+
+        stmt_articole
+            .query_map(NO_PARAMS, |row| Ok(Articol::from_row(row)))
             .unwrap()
             .collect()
     }

@@ -1,4 +1,4 @@
-use crate::db::{Revista, Editie, Downloads};
+use crate::db::{Revista, Editie, Download, Articol};
 use prettytable::{Table, Cell, Attr, Row, color};
 use rusqlite::Result;
 
@@ -66,7 +66,7 @@ impl PrintableRow for Editie {
     }
 }
 
-impl PrintableRow for Downloads {
+impl PrintableRow for Download {
     fn get_printable_header() -> Vec<String> {
         Self::get_nume_coloana().into_iter().map(|s| String::from(s)).collect()
     }
@@ -78,6 +78,39 @@ impl PrintableRow for Downloads {
             self.categorie.clone(),
             self.item.clone().map_or(empty_string(), i32_to_string),
             self.link.clone().unwrap_or(empty_string()),
+        ]
+    }
+}
+
+impl PrintableRow for Articol {
+    fn get_printable_header() -> Vec<String> {
+        Self::get_nume_coloana().into_iter().map(|s| String::from(s)).collect()
+    }
+
+    fn get_printable_row(&self) -> Vec<String> {
+        let i32_to_string = |n: i32| n.to_string();
+        vec![
+            // self.articol_id.clone().to_string(),
+            // self.revista_id.clone().to_string(),
+            self.revista_nume.clone(),
+            // self.editie_id.clone().to_string(),
+            self.editie_an.clone().to_string(),
+            self.editie_luna.clone().map_or(empty_string(), i32_to_string),
+            // self.editie_luna_sfarsit.clone().unwrap_or(empty_string()),
+            self.editie_numar.clone().to_string(),
+            // self.pg_toc.clone().map_or(empty_string(), i32_to_string),
+            // self.pg_count.clone().map_or(empty_string(), i32_to_string),
+            self.rubrica.clone().unwrap_or(empty_string()),
+            self.titlu.clone().map_or(empty_string(), |mut s| {
+                s.truncate(48);
+                s
+            }),
+            // self.joc_platforma.clone().unwrap_or(empty_string()),
+            self.autor.clone().map_or(empty_string(), |mut s| {
+                s.truncate(18);
+                s
+            }),
+            self.nota.clone().unwrap_or(empty_string()),
         ]
     }
 }
