@@ -237,15 +237,48 @@ impl DBConnection {
     fn prepare_statement(&self, query_string: &str) -> rusqlite::Statement {
         self.connection.prepare(query_string).unwrap()
     }
+}
 
-    // TODO move queries to API trait
+pub trait DBApi {
+
+    /* TODO DB queries:
+     - https://github.com/cristan2/ArhivaRevisteVechi/blob/master/resources/db/DBC.php
+     - [ ] raw query
+     - [x] queryToateRevistele*
+     - [ ] queryToateRevistele($filtruReviste)
+     - [ ] queryRevista(revistaId)
+     - [ ] queryAniEditii(revistaId)
+     - [ ] queryMaxEditiiDinRevista($revistaId)
+     - [x] queryToateEditiile*
+     - [ ] queryToateEditiile($revistaId, $filtruAn = '')
+     - [x] queryEditie($editieId)
+     - [ ] queryEditieFromNumar($revistaId, $editieNumar)
+     - [ ] queryEditieIdFromNumar($revistaId, $editieNumar)
+     - [x] queryToateArticole*
+     - [ ] queryArticoleDinEditie($editieId)
+     - [x] queryToateDownloads*
+     - [ ] queryDownloadsDinEditie($editieId)
+    */
 
     /* --- Reviste --- */
-    pub fn retrieve_toate_revistele(&self) -> Vec<Result<Revista>> {
-        let mut stmt_reviste: Statement = self.prepare_statement(
-            "
+    fn retrieve_toate_revistele(&self) -> Vec<Result<Revista>>;
+    fn retrieve_revista(&self, revista_id: &i32) -> Result<Revista>;
+    /* --- Editii --- */
+    fn retrieve_toate_editiile(&self) -> Vec<Result<Editie>>;
+    /* --- Downloads --- */
+    fn retrieve_toate_downloads(&self) -> Vec<Result<Download>>;
+    /* --- Articole --- */
+    fn retrieve_toate_articole(&self) -> Vec<Result<Articol>>;
+}
+
+impl DBApi for DBConnection {
+
+    /* --- Reviste --- */
+    fn retrieve_toate_revistele(&self) -> Vec<Result<Revista>> {
+        let query = "
             SELECT * FROM reviste
-            ");
+            ";
+        let mut stmt_reviste: Statement = self.prepare_statement(query);
 
         stmt_reviste
             .query_map(NO_PARAMS, |row| Ok(Revista::from_row(row)))
@@ -253,7 +286,7 @@ impl DBConnection {
             .collect()
     }
 
-    pub fn retrieve_revista(&self, revista_id: &i32) -> Result<Revista> {
+    fn retrieve_revista(&self, revista_id: &i32) -> Result<Revista> {
         let mut stmt_revista: Statement = self.prepare_statement(
             "SELECT revista_id, revista_nume, aparitii
             FROM reviste
@@ -269,7 +302,7 @@ impl DBConnection {
     }
 
     /* --- Editii --- */
-    pub fn retrieve_toate_editiile(&self) -> Vec<Result<Editie>> {
+    fn retrieve_toate_editiile(&self) -> Vec<Result<Editie>> {
         let mut stmt_editii: Statement = self.prepare_statement(
             "
             SELECT * FROM editii
@@ -282,7 +315,7 @@ impl DBConnection {
     }
 
     /* --- Downloads --- */
-    pub fn retrieve_toate_downloads(&self) -> Vec<Result<Download>> {
+    fn retrieve_toate_downloads(&self) -> Vec<Result<Download>> {
         let mut stmt_downloads = self.prepare_statement(
             "
             SELECT * FROM downloads
@@ -296,7 +329,7 @@ impl DBConnection {
     }
 
     /* --- Articole --- */
-    pub fn retrieve_toate_articole(&self) -> Vec<Result<Articol>> {
+    fn retrieve_toate_articole(&self) -> Vec<Result<Articol>> {
         let mut stmt_articole = self.prepare_statement(
             "
             SELECT * FROM articole

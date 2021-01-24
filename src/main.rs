@@ -1,15 +1,16 @@
 // use rusqlite::Result;
 use arhiva_reviste_ruginite::db::*;
 use arhiva_reviste_ruginite::printer::{PrintableRow, make_table};
+use rusqlite::Result;
 
 fn main() /*-> Result<()>*/ {
 
-    let db = DBConnection::open("arhiva_reviste_v7.0.db");
+    let db = DBConnection::open("arhiva_reviste_v6.db");
 
     afisare_toate_revistele(&db);
-    afisare_toate_editiile(&db);
-    afisare_toate_downloads(&db);
-    afisare_toate_articole(&db);
+    // afisare_toate_editiile(&db);
+    // afisare_toate_downloads(&db);
+    // afisare_toate_articole(&db);
 
     // citire si afisare revista dupa id
     // let rev_id = 1;
@@ -27,24 +28,26 @@ fn main() /*-> Result<()>*/ {
 
 fn afisare_toate_revistele(db: &DBConnection) {
     let reviste = db.retrieve_toate_revistele();
-    let tabel_reviste = make_table(&reviste);
-    tabel_reviste.printstd();
+    print_table(&reviste);
 }
 
 fn afisare_toate_editiile(db: &DBConnection) {
     let editii = db.retrieve_toate_editiile();
-    let tabel_editii = make_table(&editii);
-    tabel_editii.printstd();
+    print_table(&editii);
 }
 
 fn afisare_toate_downloads(db: &DBConnection) {
     let dlds = db.retrieve_toate_downloads();
-    let tabel_dlds = make_table(&dlds);
-    tabel_dlds.printstd();
+    print_table(&dlds);
 }
 
 fn afisare_toate_articole(db: &DBConnection) {
     let articole = db.retrieve_toate_articole();
-    let tabel_articole = make_table(&articole);
-    tabel_articole.printstd();
+    print_table(&articole);
+}
+
+fn print_table<T>(rows: &Vec<Result<T>>) where T: PrintableRow {
+    let tabel = make_table(rows);
+    tabel.printstd();
+    println!("Printed {:?} rows", rows.len());
 }
